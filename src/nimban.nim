@@ -39,13 +39,26 @@ proc word_count(title: string): int=
       word = true
       result += 1
   
-proc print_title(title: string)=
+proc print_title(title: string): int=
   var num: int = word_count(title)
+  var done:string = ""
+  var line_num:int = 0
   if title.len < 15:
-    stdout.write(title)
-  elif title[15] != ' ':
-    addSep(dest:title, sep:"-\r")
-
+    stdout.write(border_v & " " & title & " " & border_v)
+  else:
+    var sep_title:seq[string] = title.split(sep="(\\w{15,})+",1)
+    line_num = sep_title.len()
+    for line in 0..sep_title.len()-1:
+      var curr:string = sep_title[line]
+      if curr[curr.len] != ' ':
+        sep_title[line].add("- " & border_v & ("\r"))
+        done = done & border_v & " " & sep_title[line]
+      else:
+        sep_title[line].add("\r ")
+        done = done & border_v & " " & sep_title[line] & border_v
+  stdout.write(done)
+  return line_num
+  
 proc draw_column(col: Column) =
   #top
   set_cursor_pos(total_width+1, 0)
@@ -55,6 +68,8 @@ proc draw_column(col: Column) =
   for dy in 1..column_height-2:
     set_cursor_pos(total_width+1, dy)
     if dy > 2 and  dy < 3:
+      #find way to print title between number of lines that title takes up ie dy > 2 and dy < number_of_lines
+      #print_title
       stdout.write(border_v & " " & col.title & " " & border_v)
       continue
     stdout.write(border_v)
