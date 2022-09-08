@@ -27,7 +27,7 @@ var
   column_height: int
   total_width: int
   start_cursor: Cursor_Pos=(0,0)
-  columns = newSeq[Column](0)
+  columns:seq[Column]
   column_count: int 
 
 proc word_count(title: string): int=
@@ -82,30 +82,40 @@ proc draw_column(col: Column) =
   #Set cursor back to the begining after drawing
   set_cursor_pos(start_cursor.x, start_cursor.y)
 
+#[proc new_column(title: string)=
+  var col: Column
+  column_count+=1
+  var col_list = newSeq[string](0)
+  col = Column(title:title, width:title.len+2, id:column_count, list:col_list)
+  columns.add(col)
+  draw_column(col)]#
+
+proc show()=
+  #TODO
+  return
+
+proc add_item(column_id: int, item: string)=
+  #TODO
+  var col:Column = columns[column_id-1]
+  col.list.add(item)
+  return
 proc new_column(title: string)=
   var col: Column
   column_count+=1
   var col_list = newSeq[string](0)
   col = Column(title:title, width:title.len+2, id:column_count, list:col_list)
   columns.add(col)
-  draw_column(col)
+ 
 
-proc show()=
+proc remove_item(column_id: int, item_id: int)=
   #TODO
-  return
-
-proc add_item(item: string)=
-  #TODO
-  return
-proc add_column(title: string)=
-  #TODO
-  return
-proc remove_item(item: int)=
-  #TODO
+  var col:Column = columns[column_id-1]
+  col.list.delete(item_id)
   return
 
-proc remove_column(column: int)=
+proc remove_column(column_id: int)=
   #TODO
+  columns.delete(column_id-1)
   return
 
 proc help()=
@@ -121,14 +131,15 @@ proc process_args(args: seq[string])=
       show()
       continue
     of "i":
-      add_item(paramStr(i+1))
+      add_item(parseInt(paramStr(i+1)),paramStr(i+2))
       continue
     of "c":
-      add_column(paramStr(i+1))
+      new_column(paramStr(i+1))
       continue
     of "r":
-      var item_id:int = parseInt(paramStr(i+1))
-      remove_item(item_id)
+      var item_id:int = parseInt(paramStr(i+2))
+      var col_id:int = parseInt(paramStr(i+1))
+      remove_item(col_id, item_id)
       continue
     of "rc":
       var column_id:int = parseInt(paramStr(i+1))
