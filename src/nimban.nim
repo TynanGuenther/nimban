@@ -50,22 +50,22 @@ proc new_title(title: string) : Title=
     var sep_title:seq[string] = title.split(sep="(\\w{15,})+",1)
     line_num = sep_title.len()
     result = Title(line:title, num: line_num)
-proc print_title(title: Title)=
+proc print_line(item: string)=
   var done:string = ""
   var line_num:int = 0
-  if title.line.len < 13:
-    stdout.write(border_v & " " & title.line & " " & border_v)
+  if item.len < 13:
+    stdout.write(border_v & " " & item & " " & border_v)
   else:
-    var sep_title:seq[string] = title.line.split(sep="(\\w{15,})+",1)
-    line_num = sep_title.len()
-    for line in 0..sep_title.len()-1:
-      var curr:string = sep_title[line]
+    var sep_line:seq[string] = item.split(sep="(\\w{15,})+",1)
+    line_num = sep_line.len()
+    for line in 0..sep_line.len()-1:
+      var curr:string = sep_line[line]
       if curr[curr.len] != ' ':
-        sep_title[line].add("- " & border_v & ("\r"))
-        done = done & border_v & " " & sep_title[line]
+        sep_line[line].add("- " & border_v & ("\r"))
+        done = done & border_v & " " & sep_line[line]
       else:
-        sep_title[line].add(border_v & "\r ")
-        done = done & border_v & " " & sep_title[line]
+        sep_line[line].add(border_v & "\r ")
+        done = done & border_v & " " & sep_line[line]
   done = done & border_bl & border_h.repeat(column_width - 2) & border_br
   stdout.write(done)
   
@@ -73,13 +73,14 @@ proc draw_column(col: Column) =
   #top
   set_cursor_pos(total_width+1, 0)
   stdout.write(border_tl & border_h.repeat(column_width - 2) & border_tr)
-  print_title(col.title)
+  print_line(col.title.line)
+  stdout.write(border_bl & border_h.repeat(column_width - 2) & border_br)
   #sides
-  for dy in col.title.num + 2..column_height-2:
+  var i:int = 0
+  for dy in col.title.num + 2..col.list.len+1:
     set_cursor_pos(total_width+1, dy)
-    stdout.write(border_v)
-    set_cursor_pos(total_width + 1 + column_width, dy)
-    stdout.write(border_v)
+    print_line(col.list[i])
+    i += 1
   #bottom
   set_cursor_pos(total_width+1, column_height)
   stdout.write(border_bl & border_h.repeat(column_width - 2) & border_br)
@@ -87,15 +88,6 @@ proc draw_column(col: Column) =
   total_width = total_width + column_width
   #Set cursor back to the begining after drawing
   set_cursor_pos(0,0)
-
-#[proc new_column(title: string)=
-  var col: Column
-  column_count+=1
-  var col_list = newSeq[string](0)
-  col = Column(title:title, width:title.len+2, id:column_count, list:col_list)
-  columns.add(col)
-  draw_column(col)]#
-
 proc show()=
   for col in 0..columns.len():
     draw_column(columns[col])
@@ -119,10 +111,9 @@ proc remove_item(column_id: int, item_id: int)=
 proc remove_column(column_id: int)=
   #TODO
   columns.delete(column_id-1)
-
 proc help()=
   #TODO
-  
+  return
 proc process_args(args: seq[string])=
   if paramCount() < 1:
      show()
@@ -135,7 +126,7 @@ proc process_args(args: seq[string])=
       add_item(parseInt(paramStr(i+1)),paramStr(i+2))
       continue
     of "c":
-      new_column(new_title(paramStr(i+1))
+      new_column(new_title(paramStr(i+1)))
       continue
     of "r":
       var item_id:int = parseInt(paramStr(i+2))
